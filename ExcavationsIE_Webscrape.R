@@ -1,4 +1,5 @@
 ##Webscraping excavations.ie
+install.packages("rvest","stringr")
 
 library(rvest)
 library(stringr) ##needed to subset string to isolate by reports
@@ -19,15 +20,17 @@ pages<-as.integer(pages) ##transform page number from string to integer
 ##Gets report links to scrape data
 all_reportlinks<-character()  ##creates empty vector to store all links in
 
+url3<-sub(".*https://excavations.ie/advanced-search/", "", url) ##pulls second half of search string to be used in line 29
+
 for (i in 1:pages) {
   
   t0 <- Sys.time()
  
-   url2<-paste("https://excavations.ie/advanced-search/page/",i,"/?exca_a=advanced_search&y&c&a&snu&sna&st&rtc=ring-ditch&itm&smrn&eln", sep = "")
+  url2<-paste("https://excavations.ie/advanced-search/page/",i, url3, sep = "")
   webpage2<-read_html(url2)  ##reads in url of particular search page
   reportlinks<-html_nodes(webpage, "a")  ##gets list of attribute nodes for webpage
   reportlinks<-html_attr(reportlinks, "href")    ##pulls out attributes that are url links from webpage
-  reportlinks<-str_subset(reportlinks, "report", negate = "FALSE")  ##removes links that are not reports
+  reportlinks<-str_subset(reportlinks, "report", negate = FALSE)  ##removes links that are not reports
   all_reportlinks<-append(all_reportlinks, reportlinks)
   
   t1 <- Sys.time()
@@ -114,7 +117,7 @@ for (i in 1:length(all_reportlinks)) {
 
 data<-data.frame(County, SiteName, SMR, License, Author, SiteType, ITM, LatLong, Description)
 
-workingdirectory<-getwd() ##pulls your working directory; typing x in the R console will allow you to see what the working directory is
+workingdirectory<-getwd() ##pulls your working directory; typing workingdirectory in the R console will allow you to see what the working directory is
 outputfilename<-"excavationsIE_ring-ditch.csv" ##change this to the filename that you want
 outputpath<-file.path(workingdirectory,outputfilename)  ##creates the file path to the output file
 write.csv(data,outputpath) 
